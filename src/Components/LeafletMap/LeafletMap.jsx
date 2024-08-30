@@ -1,3 +1,4 @@
+// LeafletMap.jsx
 import React, { useState, useEffect } from "react";
 import { MapContainer, TileLayer, Marker, Circle, useMap } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
@@ -12,6 +13,9 @@ const LeafletMap = () => {
   const [position, setPosition] = useState(defaultPosition);
   const [hasLocation, setHasLocation] = useState(true);
   const [incidents, setIncidents] = useState([]);
+  const [showForm, setShowForm] = useState(false);
+  const [address, setAddress] = useState("");
+  const [description, setDescription] = useState("");
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -34,7 +38,6 @@ const LeafletMap = () => {
     }
   }, []);
 
-  // Fetch reported incidents from the database
   useEffect(() => {
     const db = getDatabase();
     const incidentsRef = ref(db, "incidents");
@@ -47,7 +50,7 @@ const LeafletMap = () => {
           .filter(([key, incident]) => {
             const incidentAge = currentTime - incident.timestamp;
             if (incidentAge < 168 * 60 * 60 * 1000) {
-              // Check if incident is less than 3 hours old
+              // Check if incident is less than 7 days old
               return true;
             } else {
               // Remove expired incident from the database
@@ -74,13 +77,26 @@ const LeafletMap = () => {
   };
 
   const reportIncident = () => {
+    setShowForm(true);
+  };
+
+  const submitReport = () => {
     const db = getDatabase();
     const incidentsRef = ref(db, "incidents");
     push(incidentsRef, {
       lat: position.lat,
       lng: position.lng,
+      address,
+      description,
       timestamp: Date.now(),
     });
+
+    // Optionally, trigger a notification here if addNotification is available
+    // addNotification({ lat: position.lat, lng: position.lng, address, description });
+
+    setAddress("");
+    setDescription("");
+    setShowForm(false);
   };
 
   return (
@@ -111,6 +127,40 @@ const LeafletMap = () => {
       >
         Report Incident
       </button>
+      {showForm && (
+        <div className="absolute top-16 left-4 bg-white p-4 shadow-lg rounded z-[1001]">
+          <h3 className="text-xl mb-2">Report Incident</h3>
+          <label className="block mb-2">
+            Address:
+            <input
+              type="text"
+              value={address}
+              onChange={(e) => setAddress(e.target.value)}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+          </label>
+          <label className="block mb-2">
+            Description:
+            <textarea
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              className="border border-gray-300 p-2 rounded w-full"
+            />
+          </label>
+          <button
+            onClick={submitReport}
+            className="bg-blue-600 text-white px-4 py-2 rounded mr-2"
+          >
+            Submit
+          </button>
+          <button
+            onClick={() => setShowForm(false)}
+            className="bg-gray-600 text-white px-4 py-2 rounded"
+          >
+            Cancel
+          </button>
+        </div>
+      )}
     </div>
   );
 };

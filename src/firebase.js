@@ -1,9 +1,9 @@
-// firebase.js
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
 import { getDatabase } from "firebase/database";
+import { getFirestore } from "firebase/firestore";
+import { getMessaging, getToken, onMessage } from "firebase/messaging"; // Import FCM
 
-// Your web app's Firebase configuration
 const firebaseConfig = {
   apiKey: "AIzaSyCH-kg_hkl-Vub0M88d99cQJqdM6fhPyrw",
   authDomain: "w-safety-9a817.firebaseapp.com",
@@ -15,9 +15,9 @@ const firebaseConfig = {
   databaseURL: "https://w-safety-9a817-default-rtdb.firebaseio.com",
 };
 
-// Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const database = getDatabase(app);
+const db = getFirestore(app);
 
-export { auth, database };
+export { auth, database, db };

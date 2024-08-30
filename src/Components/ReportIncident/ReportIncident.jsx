@@ -1,57 +1,46 @@
-// ReportIncident.jsx
-import React, { useState } from "react";
-import { getDatabase, ref, push } from "firebase/database";
-import { useNavigate } from "react-router-dom";
+import React from "react";
+import { database } from "../../firebase";
+import { ref, push } from "firebase/database";
 
 const ReportIncident = () => {
-  const [location, setLocation] = useState("");
-  const [description, setDescription] = useState("");
-  const navigate = useNavigate();
-  const db = getDatabase();
+  const handleReport = async () => {
+    console.log("Report button clicked");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    const incidentsRef = ref(db, "incidents");
+    const description = window.prompt("Please describe the incident:");
+    console.log("Description:", description);
+
+    if (!description || description.trim() === "") {
+      alert("Description cannot be empty!");
+      return;
+    }
+
+    const address = window.prompt("Please enter the address:");
+    console.log("Address:", address);
+
+    if (!address || address.trim() === "") {
+      alert("Address cannot be empty!");
+      return;
+    }
 
     try {
-      await push(incidentsRef, {
-        location,
-        description,
+      const incidentRef = ref(database, "incidents");
+      await push(incidentRef, {
+        description: description,
+        address: address,
         timestamp: new Date().toISOString(),
       });
+
       alert("Incident reported successfully!");
-      navigate("/"); // Redirect to home page or map view after reporting
     } catch (error) {
-      console.error("Error reporting incident:", error);
+      console.error("Error reporting incident: ", error);
+      alert("Failed to report the incident. Please try again.");
     }
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-white rounded-xl shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Report an Incident</h2>
-      <form onSubmit={handleSubmit}>
-        <input
-          type="text"
-          value={location}
-          onChange={(e) => setLocation(e.target.value)}
-          placeholder="Location"
-          required
-          className="w-full p-2 mb-4 border rounded"
-        />
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          placeholder="Description"
-          required
-          className="w-full p-2 mb-4 border rounded"
-        />
-        <button
-          type="submit"
-          className="bg-pink-600 text-white px-4 py-2 rounded"
-        >
-          Report
-        </button>
-      </form>
+    <div>
+      <h2>Report an Incident</h2>
+      <button onClick={handleReport}>Report Incident</button>
     </div>
   );
 };
