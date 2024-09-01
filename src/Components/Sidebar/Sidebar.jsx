@@ -26,7 +26,7 @@ const Sidebar = ({ isOpen, toggleSidebar }) => {
             <span>Chat</span>
           </Link>
           <Link
-            to="/map"
+            to="/"
             className="flex items-center px-4 py-3 hover:bg-gray-700 transition-colors duration-300"
             onClick={toggleSidebar}
           >
