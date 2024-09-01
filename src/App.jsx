@@ -1,6 +1,11 @@
-// App.jsx
 import React, { useState } from "react";
-import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
+import {
+  BrowserRouter as Router,
+  Route,
+  Routes,
+  useLocation,
+} from "react-router-dom";
+import { AnimatePresence, motion } from "framer-motion";
 import Home from "./Components/Home/Home";
 import Signup from "./Components/Signup/Signup";
 import Login from "./Components/Login/Login";
@@ -29,22 +34,61 @@ function App() {
             isSidebarOpen ? "ml-64" : "ml-0"
           }`}
         >
-          <Routes>
-            <Route
-              path="/"
-              element={
-                <Home
-                  isSidebarOpen={isSidebarOpen}
-                  toggleSidebar={toggleSidebar}
-                />
-              }
-            />
-            <Route path="/signup" element={<Signup />} />
-            <Route path="/login" element={<Login />} />
-            <Route path="/faq" element={<Faq />} />
-            <Route path="/phonesignin" element={<PhoneSignIn />} />
-            <Route path="/chat" element={<AnonymousChat />} />
-          </Routes>
+          <AnimatePresence>
+            <Routes>
+              <Route
+                path="/"
+                element={
+                  <PageTransition>
+                    <Home
+                      isSidebarOpen={isSidebarOpen}
+                      toggleSidebar={toggleSidebar}
+                    />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/signup"
+                element={
+                  <PageTransition>
+                    <Signup />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/login"
+                element={
+                  <PageTransition>
+                    <Login />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/faq"
+                element={
+                  <PageTransition>
+                    <Faq />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/phonesignin"
+                element={
+                  <PageTransition>
+                    <PhoneSignIn />
+                  </PageTransition>
+                }
+              />
+              <Route
+                path="/chat"
+                element={
+                  <PageTransition>
+                    <AnonymousChat />
+                  </PageTransition>
+                }
+              />
+            </Routes>
+          </AnimatePresence>
         </div>
       </div>
       {/* SOS Button */}
@@ -54,5 +98,22 @@ function App() {
     </Router>
   );
 }
+
+// Component to handle page transitions
+const PageTransition = ({ children }) => {
+  const location = useLocation();
+
+  return (
+    <motion.div
+      key={location.pathname}
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      exit={{ opacity: 0 }}
+      transition={{ duration: 0.5 }}
+    >
+      {children}
+    </motion.div>
+  );
+};
 
 export default App;
