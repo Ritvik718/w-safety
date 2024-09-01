@@ -1,8 +1,7 @@
-// src/Components/Login/Login.jsx
-
 import React, { useState } from "react";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { verifyGender } from "../../genderVerificationService"; // Ensure the correct path
+import { useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [name, setName] = useState("");
@@ -11,6 +10,7 @@ const Login = () => {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const [gender, setGender] = useState(null);
+  const navigate = useNavigate(); // Initialize useNavigate hook
 
   const validateEmail = (email) => {
     return email.endsWith("@srmist.edu.in");
@@ -52,6 +52,9 @@ const Login = () => {
       setPassword("");
       setGender(null);
       setError("");
+
+      // Redirect to the home page after successful login
+      navigate("/");
     } catch (error) {
       setError(error.message);
     } finally {

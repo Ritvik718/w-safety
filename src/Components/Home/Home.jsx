@@ -56,7 +56,7 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen flex bg-gradient-to-br from-pink-50 to-purple-100">
+    <div className="min-h-screen flex bg-gradient-to-br from-pink-50 to-purple-200">
       {/* Sidebar */}
       <Sidebar isOpen={isSidebarOpen} toggleSidebar={toggleSidebar} />
 
