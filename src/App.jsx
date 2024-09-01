@@ -1,10 +1,13 @@
+// App.jsx
 import React, { useState } from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Home from "./Components/Home/Home";
 import Signup from "./Components/Signup/Signup";
 import Login from "./Components/Login/Login";
+import PhoneSignIn from "./Components/PhoneSignIn/PhoneSignIn";
 import AnonymousChat from "./Components/AnonymousChat/AnonymousChat";
-import Sidebar from "./Components/Sidebar/Sidebar"; // Import Sidebar
+import Sidebar from "./Components/Sidebar/Sidebar";
+import Faq from "./Components/Faq/Faq";
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -37,6 +40,8 @@ function App() {
             />
             <Route path="/signup" element={<Signup />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/faq" element={<Faq />} />
+            <Route path="/phonesignin" element={<PhoneSignIn />} />
             <Route path="/chat" element={<AnonymousChat />} />
           </Routes>
         </div>

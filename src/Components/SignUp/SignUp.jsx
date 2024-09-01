@@ -1,7 +1,6 @@
-// Signup.jsx
 import React, { useState } from "react";
 import { getAuth, createUserWithEmailAndPassword } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Signup = () => {
   const [email, setEmail] = useState("");
@@ -20,7 +19,7 @@ const Signup = () => {
 
     try {
       await createUserWithEmailAndPassword(auth, email, password);
-      navigate("/login");
+      navigate("/login"); // Redirect to login page after successful sign up
     } catch (err) {
       console.error("Sign up error:", err);
       setError(err.message);
@@ -28,33 +27,47 @@ const Signup = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-4 bg-white rounded-xl shadow-md">
-      <h2 className="text-2xl font-bold mb-4">Sign Up</h2>
-      <form onSubmit={handleSignUp}>
-        <input
-          type="email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          placeholder="Email"
-          required
-          className="w-full p-2 mb-4 border rounded"
-        />
-        <input
-          type="password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-          placeholder="Password"
-          required
-          className="w-full p-2 mb-4 border rounded"
-        />
-        <button
-          type="submit"
-          className="bg-pink-600 text-white px-4 py-2 rounded"
-        >
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-r from-pink-200 via-pink-300 to-pink-400">
+      <div className="max-w-md w-full p-8 bg-white rounded-xl shadow-lg transform hover:scale-105 transition-transform duration-300">
+        <h2 className="text-4xl font-extrabold mb-6 text-center text-gray-800">
           Sign Up
-        </button>
-        {error && <p className="text-red-500 mt-2">{error}</p>}
-      </form>
+        </h2>
+        <form onSubmit={handleSignUp}>
+          <div className="mb-4">
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Email"
+              required
+              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-200"
+            />
+          </div>
+          <div className="mb-4">
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              placeholder="Password"
+              required
+              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-pink-500 transition duration-200"
+            />
+          </div>
+          <button
+            type="submit"
+            className="w-full bg-pink-600 text-white py-3 rounded-lg font-semibold hover:bg-pink-700 transition duration-300"
+          >
+            Sign Up
+          </button>
+          {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
+        </form>
+        <p className="text-center text-gray-600 mt-6">
+          Already have an account?{" "}
+          <Link to="/login" className="text-pink-600 font-bold hover:underline">
+            Login
+          </Link>
+        </p>
+      </div>
     </div>
   );
 };

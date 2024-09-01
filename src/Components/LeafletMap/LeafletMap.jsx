@@ -1,8 +1,16 @@
-// LeafletMap.jsx
 import React, { useState, useEffect } from "react";
-import { MapContainer, TileLayer, Marker, Circle, useMap } from "react-leaflet";
+import {
+  MapContainer,
+  TileLayer,
+  Marker,
+  Circle,
+  Popup,
+  useMap,
+} from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { getDatabase, ref, onValue, push, remove } from "firebase/database";
+import Papa from "papaparse";
+import L from "leaflet";
 
 const LeafletMap = () => {
   const defaultPosition = {
@@ -16,6 +24,7 @@ const LeafletMap = () => {
   const [showForm, setShowForm] = useState(false);
   const [address, setAddress] = useState("");
   const [description, setDescription] = useState("");
+  const [places, setPlaces] = useState([]);
 
   useEffect(() => {
     if (navigator.geolocation) {
@@ -65,10 +74,33 @@ const LeafletMap = () => {
     });
   }, []);
 
+  useEffect(() => {
+    Papa.parse("/Sexual Harassment Data.csv", {
+      download: true,
+      header: true,
+      complete: (results) => {
+        console.log("Parsed CSV data:", results.data);
+        const validPlaces = results.data.filter((place) =>
+          isValidLatLng(parseFloat(place.Latitude), parseFloat(place.Longitude))
+        );
+        console.log("Valid places:", validPlaces);
+        setPlaces(validPlaces);
+      },
+    });
+  }, []);
+
+  const isValidLatLng = (lat, lng) =>
+    !isNaN(lat) &&
+    !isNaN(lng) &&
+    lat >= -90 &&
+    lat <= 90 &&
+    lng >= -180 &&
+    lng <= 180;
+
   const MapUpdater = () => {
     const map = useMap();
     useEffect(() => {
-      if (position && position.lat && position.lng) {
+      if (isValidLatLng(position.lat, position.lng)) {
         map.setView([position.lat, position.lng], 13);
       }
     }, [position, map]);
@@ -91,13 +123,17 @@ const LeafletMap = () => {
       timestamp: Date.now(),
     });
 
-    // Optionally, trigger a notification here if addNotification is available
-    // addNotification({ lat: position.lat, lng: position.lng, address, description });
-
     setAddress("");
     setDescription("");
     setShowForm(false);
   };
+
+  const validIncidents = incidents.filter((incident) =>
+    isValidLatLng(incident.lat, incident.lng)
+  );
+  const validPlaces = places.filter((place) =>
+    isValidLatLng(parseFloat(place.Latitude), parseFloat(place.Longitude))
+  );
 
   return (
     <div style={{ width: "100%", position: "relative" }}>
@@ -110,14 +146,34 @@ const LeafletMap = () => {
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
           attribution='© <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
         />
-        <Marker position={[position.lat, position.lng]} />
-        {incidents.map((incident, index) => (
+        {isValidLatLng(position.lat, position.lng) && (
+          <Marker position={[position.lat, position.lng]} />
+        )}
+        {validIncidents.map((incident, index) => (
           <Circle
             key={index}
             center={[incident.lat, incident.lng]}
             radius={100} // 100m radius
             color="red"
           />
+        ))}
+        {validPlaces.map((place, index) => (
+          <Marker
+            key={index}
+            position={[parseFloat(place.Latitude), parseFloat(place.Longitude)]}
+            icon={L.icon({
+              iconUrl: "https://example.com/default-icon.png", // Replace with a valid URL for testing
+              iconSize: [25, 41],
+              iconAnchor: [12, 41],
+              popupAnchor: [1, -34],
+            })}
+          >
+            <Popup>
+              <b>{place.Area}</b>
+              <br />
+              {place.Class === "Safe" ? "Safe" : "Unsafe"}
+            </Popup>
+          </Marker>
         ))}
         <MapUpdater />
       </MapContainer>
