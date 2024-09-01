@@ -8,6 +8,7 @@ import PhoneSignIn from "./Components/PhoneSignIn/PhoneSignIn";
 import AnonymousChat from "./Components/AnonymousChat/AnonymousChat";
 import Sidebar from "./Components/Sidebar/Sidebar";
 import Faq from "./Components/Faq/Faq";
+import SOSButton from "./Components/SOSButton/SOSButton"; // Adjust path if necessary
 
 function App() {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -45,6 +46,10 @@ function App() {
             <Route path="/chat" element={<AnonymousChat />} />
           </Routes>
         </div>
+      </div>
+      {/* SOS Button */}
+      <div className="fixed bottom-4 right-4">
+        <SOSButton />
       </div>
     </Router>
   );

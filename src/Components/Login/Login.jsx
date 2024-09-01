@@ -1,76 +1,113 @@
+// src/Components/Login/Login.jsx
+
 import React, { useState } from "react";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
-import { useNavigate, Link } from "react-router-dom";
+import { verifyGender } from "../../genderVerificationService"; // Ensure the correct path
 
 const Login = () => {
+  const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState(null);
-  const navigate = useNavigate();
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [gender, setGender] = useState(null);
 
-  const isValidEmail = (email) => email.endsWith("@srmist.edu.in");
+  const validateEmail = (email) => {
+    return email.endsWith("@srmist.edu.in");
+  };
 
-  const handleLogin = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const auth = getAuth();
 
-    if (!isValidEmail(email)) {
-      setError("Invalid email domain. Please use your SRM email.");
+    if (!name || !email || !password) {
+      setError("All fields are required.");
       return;
     }
 
+    if (!validateEmail(email)) {
+      setError("Please use a valid SRMIST email address.");
+      return;
+    }
+
+    setLoading(true);
+
     try {
+      // Verify gender
+      const result = await verifyGender(name);
+      setGender(result?.gender || "Not Found");
+
+      if (result?.gender !== "female") {
+        setError("Gender verification failed. Only female names are allowed.");
+        setLoading(false);
+        return;
+      }
+
+      // Sign in with Firebase Authentication
+      const auth = getAuth();
       await signInWithEmailAndPassword(auth, email, password);
-      navigate("/");
-    } catch (err) {
-      setError(err.message);
+
+      // Clear form and error
+      setName("");
+      setEmail("");
+      setPassword("");
+      setGender(null);
+      setError("");
+    } catch (error) {
+      setError(error.message);
+    } finally {
+      setLoading(false);
     }
   };
 
   return (
-    <div className="min-h-screen flex flex-col justify-center items-center bg-gradient-to-br from-pink-200 via-pink-300 to-pink-400">
-      <div className="w-full max-w-md p-8 bg-white rounded-xl shadow-lg border border-gray-100">
-        <h2 className="text-4xl font-bold mb-6 text-center text-gray-800">
+    <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-purple-600 to-blue-500 p-4">
+      <div className="bg-white rounded-lg shadow-lg p-8 max-w-md w-full">
+        <h2 className="text-2xl font-bold text-gray-800 mb-6 text-center">
           Login
         </h2>
-        <form onSubmit={handleLogin}>
-          <div className="mb-4">
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Email"
-              required
-              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-pink-300 transition duration-300"
-            />
-          </div>
-          <div className="mb-6">
-            <input
-              type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="Password"
-              required
-              className="w-full p-4 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-pink-300 transition duration-300"
-            />
-          </div>
+        <form onSubmit={handleSubmit} className="flex flex-col">
+          <input
+            type="text"
+            placeholder="Enter your name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            className="border border-gray-300 rounded-md p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="email"
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="border border-gray-300 rounded-md p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="password"
+            placeholder="Enter your password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="border border-gray-300 rounded-md p-3 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
           <button
             type="submit"
-            className="w-full bg-pink-500 text-white py-3 rounded-lg font-semibold hover:bg-pink-600 focus:outline-none focus:ring-4 focus:ring-pink-300 transition duration-300"
+            className="bg-blue-500 text-white rounded-md p-3 font-semibold hover:bg-blue-600 transition duration-300"
+            disabled={loading}
           >
-            Login
+            {loading ? "Logging In..." : "Log In"}
           </button>
-          {error && <p className="text-red-500 mt-4 text-center">{error}</p>}
         </form>
-        <p className="text-center text-gray-600 mt-6">
-          Don't have an account?{" "}
-          <Link
-            to="/signup"
-            className="text-pink-600 font-bold hover:underline"
-          >
-            Sign up
-          </Link>
-        </p>
+        {error && !loading && (
+          <div className="mt-6 text-center text-red-600">
+            <p>{error}</p>
+          </div>
+        )}
+        {gender && !loading && (
+          <div className="mt-6 text-center">
+            <p className="text-lg text-gray-700">
+              Predicted Gender:
+              <span className="font-bold ml-2 capitalize">{gender}</span>
+            </p>
+          </div>
+        )}
       </div>
     </div>
   );
