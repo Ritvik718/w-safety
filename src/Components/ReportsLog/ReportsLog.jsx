@@ -1,51 +1,30 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState } from "react";
+import { database } from "../../firebase";
 import { ref, onValue, remove } from "firebase/database";
-import { auth, database } from "../../firebase"; // Adjust the path if needed
 
 const ReportsLog = () => {
   const [reports, setReports] = useState([]);
-  const [currentUserEmail, setCurrentUserEmail] = useState("");
 
   useEffect(() => {
-    // Fetch current user's email
-    if (auth.currentUser) {
-      setCurrentUserEmail(auth.currentUser.email);
-    }
-
-    const reportsRef = ref(database, "incidents");
-
-    // Handler to update the state with new reports
-    const handleReportsUpdate = (snapshot) => {
+    const reportRef = ref(database, "incidents");
+    onValue(reportRef, (snapshot) => {
       const data = snapshot.val();
-      if (data) {
-        const reportsArray = [];
-        for (let id in data) {
-          reportsArray.push({ id, ...data[id] });
-        }
-        setReports(reportsArray);
-      }
-    };
-
-    const unsubscribe = onValue(reportsRef, handleReportsUpdate);
-
-    return () => {
-      unsubscribe();
-    };
+      const reportsArray = data
+        ? Object.entries(data).map(([id, report]) => ({ id, ...report }))
+        : [];
+      setReports(reportsArray);
+    });
   }, []);
 
-  const handleDeleteReport = (reportId, reportOwnerUid) => {
-    if (currentUserEmail === reportOwnerUid) {
-      // Assuming reportOwnerUid is the email here
-      remove(ref(database, `incidents/${reportId}`))
-        .then(() => {
-          console.log("Report deleted successfully.");
-        })
-        .catch((error) => {
-          console.error("Error deleting report: ", error);
-        });
-    } else {
-      alert("You do not have permission to delete this report.");
-    }
+  const handleDelete = (id) => {
+    const reportRef = ref(database, `incidents/${id}`);
+    remove(reportRef)
+      .then(() => {
+        alert("Report deleted successfully.");
+      })
+      .catch((error) => {
+        console.error("Error deleting report: ", error);
+      });
   };
 
   return (
@@ -57,28 +36,26 @@ const ReportsLog = () => {
             {reports.map((report) => (
               <li
                 key={report.id}
-                className="mb-4 p-4 border border-gray-300 rounded"
+                className="mb-4 p-4 border border-gray-300 rounded flex justify-between items-center"
               >
-                <p>
-                  <strong>Address:</strong> {report.address}
-                </p>
-                <p>
-                  <strong>Description:</strong> {report.description}
-                </p>
-                <p>
-                  <strong>Timestamp:</strong>{" "}
-                  {new Date(report.timestamp).toLocaleString()}
-                </p>
-                {currentUserEmail === report.ownerUid && (
-                  <button
-                    onClick={() =>
-                      handleDeleteReport(report.id, report.ownerUid)
-                    }
-                    className="mt-2 bg-red-600 text-white px-4 py-2 rounded"
-                  >
-                    Delete Report
-                  </button>
-                )}
+                <div>
+                  <p>
+                    <strong>Address:</strong> {report.address}
+                  </p>
+                  <p>
+                    <strong>Description:</strong> {report.description}
+                  </p>
+                  <p>
+                    <strong>Timestamp:</strong>{" "}
+                    {new Date(report.timestamp).toLocaleString()}
+                  </p>
+                </div>
+                <button
+                  onClick={() => handleDelete(report.id)}
+                  className="text-red-600 hover:text-red-800 ml-4"
+                >
+                  Delete
+                </button>
               </li>
             ))}
           </ul>

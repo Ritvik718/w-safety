@@ -8,9 +8,16 @@ const Login = () => {
   const [error, setError] = useState(null);
   const navigate = useNavigate();
 
+  const isValidEmail = (email) => email.endsWith("@srmist.edu.in");
+
   const handleLogin = async (e) => {
     e.preventDefault();
     const auth = getAuth();
+
+    if (!isValidEmail(email)) {
+      setError("Invalid email domain. Please use your SRM email.");
+      return;
+    }
 
     try {
       await signInWithEmailAndPassword(auth, email, password);

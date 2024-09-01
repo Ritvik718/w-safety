@@ -9,7 +9,6 @@ import {
 } from "react-leaflet";
 import "leaflet/dist/leaflet.css";
 import { getDatabase, ref, onValue, push, remove } from "firebase/database";
-import Papa from "papaparse";
 import L from "leaflet";
 
 const LeafletMap = () => {
@@ -74,19 +73,126 @@ const LeafletMap = () => {
     });
   }, []);
 
+  // New data
+  const providedPlaces = [
+    {
+      area: "Kattankulathur",
+      zone: "SRM Institute of Science and Technology",
+      isSafe: true,
+      coordinates: [12.7985, 80.039],
+    },
+    {
+      area: "Kattankulathur",
+      zone: "Bharath University",
+      isSafe: false,
+      coordinates: [12.802, 80.07],
+    },
+    {
+      area: "Kattankulathur",
+      zone: "Chengalpattu",
+      isSafe: true,
+      coordinates: [12.7988, 80.0592],
+    },
+    {
+      area: "Kattankulathur",
+      zone: "SIPCOT",
+      isSafe: false,
+      coordinates: [12.805, 80.065],
+    },
+    {
+      area: "Kattankulathur",
+      zone: "Muthamil Nagar",
+      isSafe: true,
+      coordinates: [12.8, 80.06],
+    },
+    {
+      area: "Kattankulathur",
+      zone: "Kandigai",
+      isSafe: false,
+      coordinates: [12.81, 80.075],
+    },
+    {
+      area: "Potheri",
+      zone: "Potheri Village",
+      isSafe: true,
+      coordinates: [12.8232, 80.0786],
+    },
+    {
+      area: "Potheri",
+      zone: "Sree Perumal Koil",
+      isSafe: false,
+      coordinates: [12.825, 80.08],
+    },
+    {
+      area: "Potheri",
+      zone: "Sathangadu",
+      isSafe: true,
+      coordinates: [12.82, 80.085],
+    },
+    {
+      area: "Potheri",
+      zone: "Ranganathapuram",
+      isSafe: false,
+      coordinates: [12.83, 80.09],
+    },
+    {
+      area: "Guduvancheri",
+      zone: "Guduvancheri Town",
+      isSafe: false,
+      coordinates: [12.8495, 80.1422],
+    },
+    {
+      area: "Guduvancheri",
+      zone: "Thirumazhisai",
+      isSafe: true,
+      coordinates: [12.855, 80.15],
+    },
+    {
+      area: "Guduvancheri",
+      zone: "Kumarasamy Nagar",
+      isSafe: false,
+      coordinates: [12.848, 80.14],
+    },
+    {
+      area: "Guduvancheri",
+      zone: "Nellikuppam",
+      isSafe: true,
+      coordinates: [12.85, 80.145],
+    },
+    {
+      area: "Guduvancheri",
+      zone: "Perungalathur",
+      isSafe: false,
+      coordinates: [12.853, 80.155],
+    },
+    {
+      area: "Maraimalai Nagar",
+      zone: "Maraimalai Nagar Town",
+      isSafe: true,
+      coordinates: [12.752, 80.032],
+    },
+    {
+      area: "Maraimalai Nagar",
+      zone: "SIPCOT Industrial Area",
+      isSafe: false,
+      coordinates: [12.755, 80.04],
+    },
+    {
+      area: "Maraimalai Nagar",
+      zone: "Aditya Nagar",
+      isSafe: true,
+      coordinates: [12.748, 80.02],
+    },
+    {
+      area: "Maraimalai Nagar",
+      zone: "Kalamadai",
+      isSafe: false,
+      coordinates: [12.75, 80.025],
+    },
+  ];
+
   useEffect(() => {
-    Papa.parse("/Sexual Harassment Data.csv", {
-      download: true,
-      header: true,
-      complete: (results) => {
-        console.log("Parsed CSV data:", results.data);
-        const validPlaces = results.data.filter((place) =>
-          isValidLatLng(parseFloat(place.Latitude), parseFloat(place.Longitude))
-        );
-        console.log("Valid places:", validPlaces);
-        setPlaces(validPlaces);
-      },
-    });
+    setPlaces(providedPlaces);
   }, []);
 
   const isValidLatLng = (lat, lng) =>
@@ -131,9 +237,6 @@ const LeafletMap = () => {
   const validIncidents = incidents.filter((incident) =>
     isValidLatLng(incident.lat, incident.lng)
   );
-  const validPlaces = places.filter((place) =>
-    isValidLatLng(parseFloat(place.Latitude), parseFloat(place.Longitude))
-  );
 
   return (
     <div style={{ width: "100%", position: "relative" }}>
@@ -157,23 +260,32 @@ const LeafletMap = () => {
             color="red"
           />
         ))}
-        {validPlaces.map((place, index) => (
-          <Marker
-            key={index}
-            position={[parseFloat(place.Latitude), parseFloat(place.Longitude)]}
-            icon={L.icon({
-              iconUrl: "https://example.com/default-icon.png", // Replace with a valid URL for testing
-              iconSize: [25, 41],
-              iconAnchor: [12, 41],
-              popupAnchor: [1, -34],
-            })}
-          >
-            <Popup>
-              <b>{place.Area}</b>
-              <br />
-              {place.Class === "Safe" ? "Safe" : "Unsafe"}
-            </Popup>
-          </Marker>
+        {places.map((place, index) => (
+          <React.Fragment key={index}>
+            <Marker
+              position={place.coordinates}
+              icon={L.icon({
+                iconUrl: place.isSafe
+                  ? "https://example.com/safe-icon.png" // Replace with a valid URL for safe places
+                  : "https://example.com/unsafe-icon.png", // Replace with a valid URL for unsafe places
+                iconSize: [25, 41],
+                iconAnchor: [12, 41],
+                popupAnchor: [1, -34],
+              })}
+            >
+              <Popup>
+                <b>{place.zone}</b>
+                <br />
+                {place.isSafe ? "Safe" : "Unsafe"}
+              </Popup>
+            </Marker>
+            <Circle
+              center={place.coordinates}
+              radius={400} // 100m radius
+              color={place.isSafe ? "green" : "orange"}
+              fillOpacity={0.3}
+            />
+          </React.Fragment>
         ))}
         <MapUpdater />
       </MapContainer>
